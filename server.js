@@ -20,6 +20,12 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(cors({
+  origin: ['*'],
+  credentials: true
+}));
+
+
 // Ubah ini
 app.use('/api/auth', authRoutes);  // Rute auth harus didaftarkan sebelum rute lainnya
 app.use('/api', donationRoutes);
