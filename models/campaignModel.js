@@ -13,6 +13,11 @@ const campaignSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  category: {
+    type: String,
+    required: true,
+    enum: ['bencana_alam', 'pendidikan', 'kesehatan', 'kemanusiaan', 'lingkungan', 'lainnya']
+  },
   startDate: {
     type: Date,
     required: true,

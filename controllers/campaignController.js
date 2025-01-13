@@ -2,13 +2,14 @@ const Campaign = require('../models/campaignModel');
 
 // Membuat campaign baru (admin only)
 const createCampaign = async (req, res) => {
-  const { title, image, detail, startDate, endDate, target } = req.body;
+  const { title, image, detail, category, startDate, endDate, target } = req.body;
 
   try {
     const campaign = await Campaign.create({
       title,
       image,
       detail,
+      category,
       startDate: new Date(startDate),
       endDate: new Date(endDate),
       target,
@@ -69,9 +70,24 @@ const deleteCampaign = async (req, res) => {
   }
 };
 
+// Tambahkan endpoint untuk mendapatkan campaign berdasarkan kategori
+const getCampaignsByCategory = async (req, res) => {
+  const { category } = req.params;
+  
+  try {
+    const campaigns = await Campaign.find({ category })
+      .populate('createdBy', 'name email')
+      .sort({ createdAt: -1 });
+    res.status(200).json(campaigns);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createCampaign,
   getAllCampaigns,
   updateCampaign,
-  deleteCampaign
+  deleteCampaign,
+  getCampaignsByCategory
 };
