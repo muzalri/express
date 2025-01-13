@@ -1,11 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { createDonation, getDonationHistory } = require('../controllers/donationController');
+const { protect } = require('../middleware/authMiddleware');
+const { 
+  createDonation, 
+  getDonationHistory,
+  handlePaymentNotification 
+} = require('../controllers/donationController');
 
-// Rute untuk membuat donasi
-router.post('/donate', createDonation);
-
-// Rute untuk mendapatkan riwayat donasi
-router.get('/donations', getDonationHistory);
+router.post('/donate', protect, createDonation);
+router.get('/donations/history', protect, getDonationHistory);
+router.post('/donations/notification', handlePaymentNotification);
 
 module.exports = router;

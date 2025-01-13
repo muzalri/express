@@ -16,8 +16,13 @@ const userSchema = mongoose.Schema({
   },
   phone: {
     type: String,
-    required: true, // Menjadikan nomor telepon sebagai field yang wajib diisi
+    required: true,
   },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
+  }
 }, {
   timestamps: true,
 });
