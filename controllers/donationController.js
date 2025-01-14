@@ -105,48 +105,55 @@ const getDonationHistory = async (req, res) => {
 const handlePaymentNotification = async (req, res) => {
   try {
     const notification = await snap.transaction.notification(req.body);
+    console.log('Notification received:', notification);
+
+    // Extract donation ID from order_id (format: TRX-timestamp-donationId)
     const orderId = notification.order_id;
+    const donationId = orderId.split('-')[2]; // Ambil bagian terakhir
+    
     const transactionStatus = notification.transaction_status;
     const fraudStatus = notification.fraud_status;
 
-    // Debug: Log notifikasi dari Midtrans
-    console.log('Midtrans Notification:', JSON.stringify(notification, null, 2));
-
-    // Cari donasi berdasarkan order_id
-    const donation = await Donation.findById(orderId.split('-')[2]); // Ambil ID donasi dari order_id
+    console.log('Looking for donation with ID:', donationId);
+    
+    // Cari donasi berdasarkan ID yang benar
+    const donation = await Donation.findById(donationId);
     if (!donation) {
+      console.log('Donation not found for ID:', donationId);
       return res.status(404).json({ message: 'Donasi tidak ditemukan' });
     }
 
-    // Update status donasi berdasarkan notifikasi
-    if (transactionStatus === 'capture') {
-      if (fraudStatus === 'challenge') {
-        donation.paymentStatus = 'pending';
-      } else if (fraudStatus === 'accept') {
-        donation.paymentStatus = 'success';
-        // Update jumlah campaign jika pembayaran berhasil
-        await Campaign.findByIdAndUpdate(donation.campaignId, {
-          $inc: { currentAmount: donation.amount },
-        });
-      }
-    } else if (transactionStatus === 'settlement') {
+    console.log('Found donation:', donation);
+
+    // Update status donasi dan campaign amount
+    if (transactionStatus === 'settlement' || 
+       (transactionStatus === 'capture' && fraudStatus === 'accept')) {
+      
       donation.paymentStatus = 'success';
-      await Campaign.findByIdAndUpdate(donation.campaignId, {
-        $inc: { currentAmount: donation.amount },
-      });
-    } else if (['cancel', 'deny', 'expire'].includes(transactionStatus)) {
-      donation.paymentStatus = 'failed';
+      
+      // Update campaign amount
+      const campaign = await Campaign.findById(donation.campaignId);
+      if (campaign) {
+        campaign.currentAmount += donation.amount;
+        await campaign.save();
+        console.log('Campaign amount updated:', campaign.currentAmount);
+      }
     } else if (transactionStatus === 'pending') {
       donation.paymentStatus = 'pending';
+    } else {
+      donation.paymentStatus = 'failed';
     }
 
     await donation.save();
-    res.status(200).json({ message: 'Notifikasi berhasil diproses' });
+    console.log('Donation status updated:', donation.paymentStatus);
+
+    res.status(200).json({ message: 'Notification processed successfully' });
   } catch (error) {
-    console.error('Error details:', error);
-    res.status(500).json({ message: 'Terjadi kesalahan server. Silakan coba lagi.' });
+    console.error('Error processing notification:', error);
+    res.status(500).json({ message: error.message });
   }
 };
+
 
 module.exports = {
   createDonation,
