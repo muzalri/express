@@ -8,6 +8,7 @@ const authRoutes = require('./routes/authRoutes');
 const newsRoutes = require('./routes/newsRoutes');
 const campaignRoutes = require('./routes/campaignRoutes');
 const userRoutes = require('./routes/userRoutes');
+const statisticRoutes = require('./routes/statisticRoutes');
 
 dotenv.config();
 connectDB();
@@ -31,6 +32,7 @@ app.use('/api', donationRoutes);
 app.use('/api', newsRoutes);
 app.use('/api', campaignRoutes);
 app.use('/api', userRoutes);
+app.use('/api', statisticRoutes);
 
 app.get('/', (req, res) => {
   res.status(200).json({
