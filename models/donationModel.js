@@ -22,7 +22,8 @@ const donationSchema = mongoose.Schema({
   },
   paymentToken: String,
   redirectUrl: String,
-  transactionId: String
+  transactionId: String,
+  orderId: String
 }, {
   timestamps: true,
 });
