@@ -9,11 +9,12 @@ const {
   updateCampaign,
   deleteCampaign
 } = require('../controllers/campaignController');
+const upload = require('../middleware/uploadMiddleware');
 
-router.post('/campaigns', protect, isAdmin, createCampaign);
+router.post('/campaigns', protect, isAdmin, upload.array('images', 5), createCampaign);
 router.get('/campaigns', getAllCampaigns);
 router.get('/campaigns/category/:category', getCampaignsByCategory);
-router.put('/campaigns/:id', protect, isAdmin, updateCampaign);
+router.put('/campaigns/:id', protect, isAdmin, upload.array('images', 5), updateCampaign);
 router.delete('/campaigns/:id', protect, isAdmin, deleteCampaign);
 
 module.exports = router;

@@ -2,12 +2,21 @@ const Campaign = require('../models/campaignModel');
 
 // Membuat campaign baru (admin only)
 const createCampaign = async (req, res) => {
-  const { title, image, detail, category, startDate, endDate, target } = req.body;
-
   try {
+    const { title, detail, category, startDate, endDate, target } = req.body;
+    
+    // Mengambil path file yang diupload
+    const images = req.files.map(file => `/uploads/${file.filename}`);
+
+    if (images.length === 0) {
+      return res.status(400).json({ 
+        message: "Minimal satu gambar harus diunggah" 
+      });
+    }
+
     const campaign = await Campaign.create({
       title,
-      image,
+      images,
       detail,
       category,
       startDate: new Date(startDate),
@@ -42,11 +51,19 @@ const getAllCampaigns = async (req, res) => {
 const updateCampaign = async (req, res) => {
   const { id } = req.params;
   try {
+    let updateData = { ...req.body };
+    
+    // Jika ada file baru diupload
+    if (req.files && req.files.length > 0) {
+      updateData.images = req.files.map(file => `/uploads/${file.filename}`);
+    }
+
     const campaign = await Campaign.findByIdAndUpdate(
       id,
-      req.body,
+      updateData,
       { new: true }
     );
+
     if (!campaign) {
       return res.status(404).json({ message: 'Campaign tidak ditemukan' });
     }

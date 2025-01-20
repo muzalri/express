@@ -9,6 +9,8 @@ const newsRoutes = require('./routes/newsRoutes');
 const campaignRoutes = require('./routes/campaignRoutes');
 const userRoutes = require('./routes/userRoutes');
 const statisticRoutes = require('./routes/statisticRoutes');
+const documentationRoutes = require('./routes/documentationRoutes');
+
 
 dotenv.config();
 connectDB();
@@ -22,6 +24,8 @@ app.use(cors({
 
 app.use(bodyParser.json());
 
+app.use('/uploads', express.static('public/uploads'));
+
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
   next();
@@ -33,6 +37,7 @@ app.use('/api', newsRoutes);
 app.use('/api', campaignRoutes);
 app.use('/api', userRoutes);
 app.use('/api', statisticRoutes);
+app.use('/api', documentationRoutes);
 
 app.get('/', (req, res) => {
   res.status(200).json({
