@@ -3,7 +3,7 @@ const Documentation = require('../models/documentationModel');
 // Create documentation
 const createDocumentation = async (req, res) => {
   try {
-    const { title } = req.body;
+    const { title, date } = req.body;
     
     // Mengambil path file yang diupload
     const images = req.files.map(file => `/uploads/${file.filename}`);
@@ -17,7 +17,7 @@ const createDocumentation = async (req, res) => {
     const documentation = await Documentation.create({
       title,
       images,
-      date: new Date()
+      date: date ? new Date(date) : new Date()
     });
 
     res.status(201).json({
