@@ -1,4 +1,5 @@
 const User = require('../models/userModel');
+const bcrypt = require('bcryptjs');
 
 // Get all users
 const getAllUsers = async (req, res) => {
@@ -10,9 +11,52 @@ const getAllUsers = async (req, res) => {
   }
 };
 
+// Get single user
+const getUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User tidak ditemukan' });
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Update user
+const updateUser = async (req, res) => {
+  try {
+    const { name, email, phone, password } = req.body;
+    const updateData = { name, email, phone };
+
+    // Jika ada password baru, hash password
+    if (password) {
+      updateData.password = await bcrypt.hash(password, 10);
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    ).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User tidak ditemukan' });
+    }
+
+    res.json({
+      success: true,
+      message: 'User berhasil diupdate',
+      user
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Update user role
 const updateUserRole = async (req, res) => {
-  const { id } = req.params;
   const { role } = req.body;
 
   if (!['user', 'admin'].includes(role)) {
@@ -21,7 +65,7 @@ const updateUserRole = async (req, res) => {
 
   try {
     const user = await User.findByIdAndUpdate(
-      id,
+      req.params.id,
       { role },
       { new: true }
     ).select('-password');
@@ -30,7 +74,11 @@ const updateUserRole = async (req, res) => {
       return res.status(404).json({ message: 'User tidak ditemukan' });
     }
 
-    res.json(user);
+    res.json({
+      success: true,
+      message: 'Role user berhasil diupdate',
+      user
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -38,14 +86,15 @@ const updateUserRole = async (req, res) => {
 
 // Delete user
 const deleteUser = async (req, res) => {
-  const { id } = req.params;
-
   try {
-    const user = await User.findByIdAndDelete(id);
+    const user = await User.findByIdAndDelete(req.params.id);
     if (!user) {
       return res.status(404).json({ message: 'User tidak ditemukan' });
     }
-    res.json({ message: 'User berhasil dihapus' });
+    res.json({ 
+      success: true,
+      message: 'User berhasil dihapus' 
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -53,6 +102,8 @@ const deleteUser = async (req, res) => {
 
 module.exports = {
   getAllUsers,
+  getUser,
+  updateUser,
   updateUserRole,
   deleteUser
 }; 
