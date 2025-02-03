@@ -1,3 +1,4 @@
+const { Op } = require('sequelize');
 const News = require('../models/newsModel');
 
 // Membuat berita baru
@@ -26,7 +27,7 @@ const getNewsByDate = async (req, res) => {
   const { date } = req.query;
   
   try {
-    let query = { isActive: true };
+    let where = { isActive: true };
     
     if (date) {
       const startDate = new Date(date);
@@ -35,13 +36,16 @@ const getNewsByDate = async (req, res) => {
       const endDate = new Date(date);
       endDate.setHours(23, 59, 59, 999);
       
-      query.publishDate = {
-        $gte: startDate,
-        $lte: endDate
+      where.publishDate = {
+        [Op.between]: [startDate, endDate]
       };
     }
     
-    const news = await News.find(query).sort({ publishDate: -1 });
+    const news = await News.findAll({
+      where,
+      order: [['publishDate', 'DESC']]
+    });
+    
     res.status(200).json(news);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -54,21 +58,20 @@ const updateNews = async (req, res) => {
   const { title, content, publishDate } = req.body;
 
   try {
-    const news = await News.findByIdAndUpdate(
-      id,
-      {
-        title,
-        content,
-        publishDate: new Date(publishDate)
-      },
-      { new: true }
-    );
+    const [updated] = await News.update({
+      title,
+      content,
+      publishDate: new Date(publishDate)
+    }, {
+      where: { id }
+    });
 
-    if (!news) {
+    if (!updated) {
       return res.status(404).json({ message: 'Berita tidak ditemukan' });
     }
 
-    res.json(news);
+    const updatedNews = await News.findByPk(id);
+    res.json(updatedNews);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

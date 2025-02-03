@@ -1,5 +1,6 @@
 const Donation = require('../models/donationModel');
 const Campaign = require('../models/campaignModel');
+const User = require('../models/userModel');
 const midtransClient = require('midtrans-client');
 require('dotenv').config(); // Pastikan environment variables terload
 
@@ -17,10 +18,10 @@ console.log('Client Key:', process.env.MIDTRANS_CLIENT_KEY);
 // Membuat Donasi Baru
 const createDonation = async (req, res) => {
   const { campaignId, amount } = req.body;
-  const userId = req.user._id;
+  const userId = req.user.id;
 
   try {
-    const campaign = await Campaign.findById(campaignId);
+    const campaign = await Campaign.findByPk(campaignId);
     if (!campaign) {
       return res.status(404).json({ message: 'Campaign tidak ditemukan' });
     }

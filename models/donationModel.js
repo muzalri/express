@@ -1,31 +1,33 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
+const User = require('./userModel');
+const Campaign = require('./campaignModel');
 
-const donationSchema = mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  campaignId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Campaign',
-    required: true
-  },
+const Donation = sequelize.define('Donation', {
   amount: {
-    type: Number,
-    required: true,
+    type: DataTypes.INTEGER,
+    allowNull: false
   },
   paymentStatus: {
-    type: String,
-    enum: ['pending', 'success', 'failed', 'expired'],
-    default: "pending",
+    type: DataTypes.ENUM('pending', 'success', 'failed'),
+    defaultValue: 'pending'
   },
-  paymentToken: String,
-  redirectUrl: String,
-  transactionId: String,
-  orderId: String
-}, {
-  timestamps: true,
+  orderId: {
+    type: DataTypes.STRING,
+    unique: true
+  },
+  paymentToken: {
+    type: DataTypes.STRING
+  },
+  redirectUrl: {
+    type: DataTypes.STRING
+  },
+  transactionId: {
+    type: DataTypes.STRING
+  }
 });
 
-module.exports = mongoose.model('Donation', donationSchema);
+Donation.belongsTo(User, { foreignKey: 'userId' });
+Donation.belongsTo(Campaign, { foreignKey: 'campaignId' });
+
+module.exports = Donation;

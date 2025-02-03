@@ -1,4 +1,5 @@
 const Campaign = require('../models/campaignModel');
+const User = require('../models/userModel');
 
 // Membuat campaign baru (admin only)
 const createCampaign = async (req, res) => {
@@ -22,7 +23,7 @@ const createCampaign = async (req, res) => {
       startDate: new Date(startDate),
       endDate: new Date(endDate),
       target,
-      createdBy: req.user._id
+      createdBy: req.user.id
     });
 
     res.status(201).json({
@@ -38,9 +39,14 @@ const createCampaign = async (req, res) => {
 // Mendapatkan semua campaign
 const getAllCampaigns = async (req, res) => {
   try {
-    const campaigns = await Campaign.find()
-      .populate('createdBy', 'name email')
-      .sort({ createdAt: -1 });
+    const campaigns = await Campaign.findAll({
+      include: [{
+        model: User,
+        as: 'creator',
+        attributes: ['name', 'email']
+      }],
+      order: [['createdAt', 'DESC']]
+    });
     res.status(200).json(campaigns);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -92,9 +98,15 @@ const getCampaignsByCategory = async (req, res) => {
   const { category } = req.params;
   
   try {
-    const campaigns = await Campaign.find({ category })
-      .populate('createdBy', 'name email')
-      .sort({ createdAt: -1 });
+    const campaigns = await Campaign.findAll({
+      where: { category },
+      include: [{
+        model: User,
+        as: 'creator',
+        attributes: ['name', 'email']
+      }],
+      order: [['createdAt', 'DESC']]
+    });
     res.status(200).json(campaigns);
   } catch (error) {
     res.status(500).json({ message: error.message });

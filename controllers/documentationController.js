@@ -33,8 +33,9 @@ const createDocumentation = async (req, res) => {
 // Get all documentations
 const getAllDocumentations = async (req, res) => {
   try {
-    const documentations = await Documentation.find()
-      .sort({ date: -1 });
+    const documentations = await Documentation.findAll({
+      order: [['date', 'DESC']]
+    });
     res.status(200).json(documentations);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -52,19 +53,21 @@ const updateDocumentation = async (req, res) => {
       updateData.images = req.files.map(file => `/uploads/${file.filename}`);
     }
 
-    const documentation = await Documentation.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true }
-    );
+    const documentation = await Documentation.update(updateData, {
+      where: { id },
+      returning: true
+    });
 
-    if (!documentation) {
+    if (!documentation[0]) {
       return res.status(404).json({ message: 'Dokumentasi tidak ditemukan' });
     }
+
+    const updatedDoc = await Documentation.findByPk(id);
+    
     res.json({
       success: true,
       message: "Dokumentasi berhasil diupdate",
-      documentation
+      documentation: updatedDoc
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

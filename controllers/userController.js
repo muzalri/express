@@ -4,7 +4,9 @@ const bcrypt = require('bcryptjs');
 // Get all users
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find().select('-password');
+    const users = await User.findAll({
+      attributes: { exclude: ['password'] }
+    });
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -14,10 +16,14 @@ const getAllUsers = async (req, res) => {
 // Get single user
 const getUser = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select('-password');
+    const user = await User.findByPk(req.params.id, {
+      attributes: { exclude: ['password'] }
+    });
+    
     if (!user) {
       return res.status(404).json({ message: 'User tidak ditemukan' });
     }
+    
     res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -30,20 +36,21 @@ const updateUser = async (req, res) => {
     const { name, email, phone, password } = req.body;
     const updateData = { name, email, phone };
 
-    // Jika ada password baru, hash password
     if (password) {
       updateData.password = await bcrypt.hash(password, 10);
     }
 
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      updateData,
-      { new: true }
-    ).select('-password');
+    const [updated] = await User.update(updateData, {
+      where: { id: req.params.id }
+    });
 
-    if (!user) {
+    if (!updated) {
       return res.status(404).json({ message: 'User tidak ditemukan' });
     }
+
+    const user = await User.findByPk(req.params.id, {
+      attributes: { exclude: ['password'] }
+    });
 
     res.json({
       success: true,
@@ -64,15 +71,17 @@ const updateUserRole = async (req, res) => {
   }
 
   try {
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      { role },
-      { new: true }
-    ).select('-password');
+    const [updated] = await User.update({ role }, {
+      where: { id: req.params.id }
+    });
 
-    if (!user) {
+    if (!updated) {
       return res.status(404).json({ message: 'User tidak ditemukan' });
     }
+
+    const user = await User.findByPk(req.params.id, {
+      attributes: { exclude: ['password'] }
+    });
 
     res.json({
       success: true,
@@ -87,10 +96,14 @@ const updateUserRole = async (req, res) => {
 // Delete user
 const deleteUser = async (req, res) => {
   try {
-    const user = await User.findByIdAndDelete(req.params.id);
-    if (!user) {
+    const deleted = await User.destroy({
+      where: { id: req.params.id }
+    });
+
+    if (!deleted) {
       return res.status(404).json({ message: 'User tidak ditemukan' });
     }
+
     res.json({ 
       success: true,
       message: 'User berhasil dihapus' 

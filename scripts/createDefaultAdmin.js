@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const { sequelize } = require('../config/db');
 const User = require('../models/userModel');
 const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
@@ -7,9 +7,12 @@ dotenv.config();
 
 const createDefaultAdmin = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    await sequelize.authenticate();
     
-    const adminExists = await User.findOne({ email: 'admin@admin.com' });
+    const adminExists = await User.findOne({ 
+      where: { email: 'admin@admin.com' } 
+    });
+    
     if (adminExists) {
       console.log('Admin sudah ada');
       process.exit(0);

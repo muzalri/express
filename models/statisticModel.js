@@ -1,24 +1,27 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
 
-const statisticSchema = mongoose.Schema({
+const Statistic = sequelize.define('Statistic', {
   totalSuccessfulDonations: {
-    type: Number,
-    default: 0
+    type: DataTypes.INTEGER,
+    defaultValue: 0
   },
   totalDonationAmount: {
-    type: Number,
-    default: 0
+    type: DataTypes.DECIMAL(15, 2),
+    defaultValue: 0
   },
   totalRegisteredUsers: {
-    type: Number,
-    default: 0
+    type: DataTypes.INTEGER,
+    defaultValue: 0
+  },
+  activeCampaigns: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0
   },
   lastUpdated: {
-    type: Date,
-    default: Date.now
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
   }
-}, {
-  timestamps: true
 });
 
-module.exports = mongoose.model('Statistic', statisticSchema); 
+module.exports = Statistic; 

@@ -1,24 +1,23 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
 
-const newsSchema = mongoose.Schema({
+const News = sequelize.define('News', {
   title: {
-    type: String,
-    required: true,
+    type: DataTypes.STRING,
+    allowNull: false
   },
   content: {
-    type: String,
-    required: true,
+    type: DataTypes.TEXT,
+    allowNull: false
   },
   publishDate: {
-    type: Date,
-    required: true,
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
   },
   isActive: {
-    type: Boolean,
-    default: true
+    type: DataTypes.BOOLEAN,
+    defaultValue: true
   }
-}, {
-  timestamps: true,
 });
 
-module.exports = mongoose.model('News', newsSchema);
+module.exports = News;

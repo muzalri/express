@@ -1,21 +1,19 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
 
-const documentationSchema = mongoose.Schema({
+const Documentation = sequelize.define('Documentation', {
   title: {
-    type: String,
-    required: false, // nullable
+    type: DataTypes.STRING,
+    allowNull: false
   },
-  images: [{
-    type: String,
-    required: true,
-  }],
+  images: {
+    type: DataTypes.JSON,
+    allowNull: false
+  },
   date: {
-    type: Date,
-    default: Date.now,
-    required: true,
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
   }
-}, {
-  timestamps: true,
 });
 
-module.exports = mongoose.model('Documentation', documentationSchema); 
+module.exports = Documentation; 
