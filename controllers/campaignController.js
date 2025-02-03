@@ -29,10 +29,14 @@ const createCampaign = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "Campaign berhasil dibuat",
-      campaign
+      campaign,
+      userRole: req.user.role
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ 
+      message: error.message,
+      userRole: req.user.role
+    });
   }
 };
 
@@ -47,9 +51,17 @@ const getAllCampaigns = async (req, res) => {
       }],
       order: [['createdAt', 'DESC']]
     });
-    res.status(200).json(campaigns);
+    
+    res.status(200).json({
+      success: true,
+      campaigns,
+      userRole: req.user?.role || 'public'
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ 
+      message: error.message,
+      userRole: req.user?.role || 'public'
+    });
   }
 };
 
@@ -64,18 +76,27 @@ const updateCampaign = async (req, res) => {
       updateData.images = req.files.map(file => `/uploads/${file.filename}`);
     }
 
-    const campaign = await Campaign.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true }
-    );
-
+    const campaign = await Campaign.findByPk(id);
     if (!campaign) {
-      return res.status(404).json({ message: 'Campaign tidak ditemukan' });
+      return res.status(404).json({ 
+        message: 'Campaign tidak ditemukan',
+        userRole: req.user.role
+      });
     }
-    res.json(campaign);
+
+    await campaign.update(updateData);
+
+    res.json({
+      success: true,
+      message: 'Campaign berhasil diperbarui',
+      campaign,
+      userRole: req.user.role
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ 
+      message: error.message,
+      userRole: req.user.role
+    });
   }
 };
 
@@ -83,13 +104,25 @@ const updateCampaign = async (req, res) => {
 const deleteCampaign = async (req, res) => {
   const { id } = req.params;
   try {
-    const campaign = await Campaign.findByIdAndDelete(id);
+    const campaign = await Campaign.findByPk(id);
     if (!campaign) {
-      return res.status(404).json({ message: 'Campaign tidak ditemukan' });
+      return res.status(404).json({ 
+        message: 'Campaign tidak ditemukan',
+        userRole: req.user.role
+      });
     }
-    res.json({ message: 'Campaign berhasil dihapus' });
+
+    await campaign.destroy();
+    res.json({
+      success: true,
+      message: 'Campaign berhasil dihapus',
+      userRole: req.user.role
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ 
+      message: error.message,
+      userRole: req.user.role
+    });
   }
 };
 
@@ -107,9 +140,16 @@ const getCampaignsByCategory = async (req, res) => {
       }],
       order: [['createdAt', 'DESC']]
     });
-    res.status(200).json(campaigns);
+    res.status(200).json({
+      success: true,
+      campaigns,
+      userRole: req.user.role
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ 
+      message: error.message,
+      userRole: req.user.role
+    });
   }
 };
 
