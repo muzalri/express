@@ -6,9 +6,9 @@ require('dotenv').config(); // Pastikan environment variables terload
 
 // Inisialisasi Midtrans
 const snap = new midtransClient.Snap({
-  isProduction: true, // Ubah ke production mode
-  serverKey: 'Mid-server-u-QrSGLce6hQvXfIUEO15iYu',
-  clientKey: 'Mid-client-4U9vA8wZWw9XpX6G',
+  isProduction: false, // Mode sandbox untuk testing
+  serverKey: process.env.MIDTRANS_SERVER_KEY,
+  clientKey: process.env.MIDTRANS_CLIENT_KEY,
 });
 
 // Debug: Log serverKey dan clientKey
