@@ -1,10 +1,12 @@
 const Campaign = require('../models/campaignModel');
 const User = require('../models/userModel');
+const { Op } = require('sequelize');
+const sequelize = require('sequelize');
 
 // Membuat campaign baru (admin only)
 const createCampaign = async (req, res) => {
   try {
-    const { title, detail, category, startDate, endDate, target } = req.body;
+    const { title, detail, category, startDate, endDate, target, latitude, longitude, address } = req.body;
     
     // Mengambil path file yang diupload
     const images = req.files.map(file => `/uploads/${file.filename}`);
@@ -23,6 +25,9 @@ const createCampaign = async (req, res) => {
       startDate: new Date(startDate),
       endDate: new Date(endDate),
       target,
+      latitude,
+      longitude,
+      address,
       createdBy: req.user.id
     });
 
@@ -36,6 +41,76 @@ const createCampaign = async (req, res) => {
     res.status(500).json({ 
       message: error.message,
       userRole: req.user.role
+    });
+  }
+};
+
+// Fungsi helper untuk menghitung jarak menggunakan Haversine formula
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371; // Radius bumi dalam kilometer
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c; // Jarak dalam kilometer
+};
+
+// Mendapatkan campaign berdasarkan lokasi
+const getCampaignsByLocation = async (req, res) => {
+  try {
+    const { latitude, longitude, radius = 10 } = req.query; // radius dalam kilometer, default 10km
+    
+    if (!latitude || !longitude) {
+      return res.status(400).json({
+        success: false,
+        message: 'Latitude dan longitude harus disertakan'
+      });
+    }
+
+    const campaigns = await Campaign.findAll({
+      where: {
+        latitude: {
+          [Op.not]: null
+        },
+        longitude: {
+          [Op.not]: null
+        }
+      },
+      include: [{
+        model: User,
+        as: 'creator',
+        attributes: ['name', 'email']
+      }]
+    });
+
+    // Filter campaign berdasarkan radius
+    const nearbyCampaigns = campaigns.filter(campaign => {
+      const distance = calculateDistance(
+        parseFloat(latitude),
+        parseFloat(longitude),
+        parseFloat(campaign.latitude),
+        parseFloat(campaign.longitude)
+      );
+      campaign.dataValues.distance = Math.round(distance * 100) / 100; // Bulatkan ke 2 desimal
+      return distance <= radius;
+    });
+
+    // Urutkan berdasarkan jarak terdekat
+    nearbyCampaigns.sort((a, b) => a.dataValues.distance - b.dataValues.distance);
+
+    res.status(200).json({
+      success: true,
+      data: nearbyCampaigns,
+      userRole: req.user?.role || 'public'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      userRole: req.user?.role || 'public'
     });
   }
 };
@@ -158,5 +233,6 @@ module.exports = {
   getAllCampaigns,
   updateCampaign,
   deleteCampaign,
-  getCampaignsByCategory
+  getCampaignsByCategory,
+  getCampaignsByLocation
 };

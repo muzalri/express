@@ -6,6 +6,7 @@ const {
   createCampaign,
   getAllCampaigns,
   getCampaignsByCategory,
+  getCampaignsByLocation,
   updateCampaign,
   deleteCampaign
 } = require('../controllers/campaignController');
@@ -14,6 +15,7 @@ const upload = require('../middleware/uploadMiddleware');
 // Public routes
 router.get('/campaigns', getAllCampaigns);
 router.get('/campaigns/category/:category', getCampaignsByCategory);
+router.get('/campaigns/nearby', getCampaignsByLocation);
 
 // Protected routes
 router.post('/campaigns', protect, isAdmin, upload.array('images', 5), createCampaign);
