@@ -38,30 +38,6 @@ const Campaign = sequelize.define('Campaign', {
   status: {
     type: DataTypes.ENUM('active', 'completed', 'cancelled'),
     defaultValue: 'active'
-  },
-  location: {
-    type: DataTypes.GEOMETRY,
-    allowNull: true
-  },
-  latitude: {
-    type: DataTypes.DECIMAL(10, 8),
-    allowNull: true,
-    validate: {
-      min: -90,
-      max: 90
-    }
-  },
-  longitude: {
-    type: DataTypes.DECIMAL(11, 8),
-    allowNull: true,
-    validate: {
-      min: -180,
-      max: 180
-    }
-  },
-  address: {
-    type: DataTypes.STRING,
-    allowNull: true
   }
 });
 
