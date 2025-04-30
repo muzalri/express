@@ -34,7 +34,7 @@ const createDonation = async (req, res) => {
     });
 
     // Format order_id sesuai dengan format Midtrans
-    const orderId = `payment_${donation._id}_${Date.now()}`;
+    const orderId = `payment_notif_test_${process.env.MIDTRANS_MERCHANT_ID}_${donation.id}`;
 
     const parameter = {
       transaction_details: {
@@ -74,12 +74,14 @@ const createDonation = async (req, res) => {
 // Mendapatkan riwayat donasi user
 const getDonationHistory = async (req, res) => {
   try {
-    const donations = await Donation.find({ userId: req.user._id })
-      .populate({
-        path: 'campaignId',
-        select: 'title image category'
-      })
-      .sort('-createdAt');
+    const donations = await Donation.findAll({
+      where: { userId: req.user.id },
+      include: [{
+        model: Campaign,
+        attributes: ['title', 'images', 'category']
+      }],
+      order: [['createdAt', 'DESC']]
+    });
 
     // Cek status di Midtrans untuk setiap donasi yang masih pending
     for (let donation of donations) {
@@ -93,7 +95,7 @@ const getDonationHistory = async (req, res) => {
             donation.paymentStatus = 'success';
             
             // Update campaign amount jika status berubah menjadi success
-            const campaign = await Campaign.findById(donation.campaignId);
+            const campaign = await Campaign.findByPk(donation.campaignId);
             if (campaign) {
               campaign.currentAmount += donation.amount;
               await campaign.save();
@@ -129,15 +131,22 @@ const handlePaymentNotification = async (req, res) => {
       gross_amount
     } = req.body;
 
-    // Extract donation ID dari order_id (format: payment_donationId_timestamp)
-    const donationId = order_id.split('_')[1];
-    console.log('Extracted donation ID:', donationId);
+    // Cari donasi berdasarkan order_id
+    const donation = await Donation.findOne({
+      where: { orderId: order_id }
+    });
 
-    const donation = await Donation.findById(donationId);
     if (!donation) {
-      console.log('Donation not found for ID:', donationId);
+      console.log('Donation not found for order_id:', order_id);
       return res.status(200).json({ message: 'Donasi tidak ditemukan' });
     }
+
+    console.log('Found donation:', {
+      id: donation.id,
+      orderId: donation.orderId,
+      amount: donation.amount,
+      currentStatus: donation.paymentStatus
+    });
 
     // Verifikasi jumlah pembayaran
     if (parseInt(gross_amount) !== donation.amount) {
@@ -156,7 +165,7 @@ const handlePaymentNotification = async (req, res) => {
       donation.paymentStatus = 'success';
       
       // Update campaign amount
-      const campaign = await Campaign.findById(donation.campaignId);
+      const campaign = await Campaign.findByPk(donation.campaignId);
       if (campaign) {
         campaign.currentAmount = (campaign.currentAmount || 0) + donation.amount;
         await campaign.save();
@@ -170,9 +179,10 @@ const handlePaymentNotification = async (req, res) => {
 
     await donation.save();
     console.log('Donation updated:', {
-      id: donation._id,
+      id: donation.id,
       status: donation.paymentStatus,
-      transactionId: donation.transactionId
+      transactionId: donation.transactionId,
+      orderId: donation.orderId
     });
 
     res.status(200).json({ 
