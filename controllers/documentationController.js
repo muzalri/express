@@ -76,18 +76,30 @@ const updateDocumentation = async (req, res) => {
 
 // Delete documentation
 const deleteDocumentation = async (req, res) => {
-  const { id } = req.params;
   try {
-    const documentation = await Documentation.findByIdAndDelete(id);
+    const { id } = req.params;
+    
+    const documentation = await Documentation.findByPk(id);
     if (!documentation) {
-      return res.status(404).json({ message: 'Dokumentasi tidak ditemukan' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Dokumentasi tidak ditemukan' 
+      });
     }
-    res.json({ 
+
+    await documentation.destroy();
+
+    res.status(200).json({ 
       success: true,
       message: 'Dokumentasi berhasil dihapus' 
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error deleting documentation:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Gagal menghapus dokumentasi',
+      error: error.message 
+    });
   }
 };
 

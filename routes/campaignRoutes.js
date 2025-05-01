@@ -7,17 +7,22 @@ const {
   getAllCampaigns,
   getCampaignsByCategory,
   updateCampaign,
-  deleteCampaign
+  deleteCampaign,
+  getAllCampaignStatistics
 } = require('../controllers/campaignController');
 const upload = require('../middleware/uploadMiddleware');
 
 // Public routes
 router.get('/campaigns', getAllCampaigns);
 router.get('/campaigns/category/:category', getCampaignsByCategory);
+router.get('/campaigns/statistics', protect, getAllCampaignStatistics);
 
-// Protected routes
-router.post('/campaigns', protect, isAdmin, upload.array('images', 5), createCampaign);
-router.put('/campaigns/:id', protect, isAdmin, upload.array('images', 5), updateCampaign);
-router.delete('/campaigns/:id', protect, isAdmin, deleteCampaign);
+// Protected routes (Admin only)
+router.route('/campaigns')
+  .post(protect, isAdmin, upload.array('images', 5), createCampaign);
+
+router.route('/campaigns/:id')
+  .put(protect, isAdmin, upload.array('images', 5), updateCampaign)
+  .delete(protect, isAdmin, deleteCampaign);
 
 module.exports = router;

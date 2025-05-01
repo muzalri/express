@@ -38,9 +38,9 @@ const startServer = async () => {
     
     // Routes
     app.use('/api/auth', authRoutes);
+    app.use('/api', campaignRoutes);
     app.use('/api', donationRoutes);
     app.use('/api', newsRoutes);
-    app.use('/api', campaignRoutes);
     app.use('/api', userRoutes);
     app.use('/api', statisticRoutes);
     app.use('/api', documentationRoutes);
@@ -71,7 +71,7 @@ const startServer = async () => {
     // Start server
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+      console.log(`Server is running on port ${PORT}`);
     });
     
   } catch (error) {
