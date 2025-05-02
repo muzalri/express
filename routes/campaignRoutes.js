@@ -8,7 +8,8 @@ const {
   getCampaignsByCategory,
   updateCampaign,
   deleteCampaign,
-  getAllCampaignStatistics
+  getAllCampaignStatistics,
+  getCampaignById
 } = require('../controllers/campaignController');
 const upload = require('../middleware/uploadMiddleware');
 
@@ -16,6 +17,7 @@ const upload = require('../middleware/uploadMiddleware');
 router.get('/campaigns', getAllCampaigns);
 router.get('/campaigns/category/:category', getCampaignsByCategory);
 router.get('/campaigns/statistics', protect, getAllCampaignStatistics);
+router.get('/campaigns/:id', getCampaignById);
 
 // Protected routes (Admin only)
 router.route('/campaigns')

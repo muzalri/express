@@ -38,6 +38,14 @@ const Campaign = sequelize.define('Campaign', {
   status: {
     type: DataTypes.ENUM('active', 'completed', 'cancelled'),
     defaultValue: 'active'
+  },
+  latitude: {
+    type: DataTypes.FLOAT,
+    allowNull: true
+  },
+  longitude: {
+    type: DataTypes.FLOAT,
+    allowNull: true
   }
 });
 

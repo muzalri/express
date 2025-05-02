@@ -326,6 +326,40 @@ const getAllCampaignStatistics = async (req, res) => {
   }
 };
 
+const getCampaignById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const campaign = await Campaign.findByPk(id, {
+      include: [{
+        model: User,
+        as: 'creator',
+        attributes: ['name', 'email']
+      }]
+    });
+
+    if (!campaign) {
+      return res.status(404).json({
+        success: false,
+        message: 'Campaign tidak ditemukan',
+        userRole: req.user?.role || 'public'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      campaign,
+      userRole: req.user?.role || 'public'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      userRole: req.user?.role || 'public'
+    });
+  }
+};
+
 module.exports = {
   createCampaign,
   getAllCampaigns,
@@ -333,5 +367,6 @@ module.exports = {
   deleteCampaign,
   getCampaignsByCategory,
   getCampaignStatistics,
-  getAllCampaignStatistics
+  getAllCampaignStatistics,
+  getCampaignById
 };
