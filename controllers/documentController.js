@@ -5,42 +5,21 @@ const fs = require('fs');
 
 const uploadDocument = async (req, res) => {
   try {
-    if (!req.files || !req.files.pdf) {
+    if (!req.file) {
       return res.status(400).json({ 
         success: false, 
         message: 'No PDF file uploaded' 
       });
     }
 
-    const pdfFile = req.files.pdf;
     const { title } = req.body;
+    const pdfFile = req.file;
 
-    // Validate file type
-    if (pdfFile.mimetype !== 'application/pdf') {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Only PDF files are allowed' 
-      });
-    }
-
-    // Create uploads directory if it doesn't exist
-    const uploadDir = path.join(__dirname, '../uploads/documents');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-
-    // Generate unique filename
-    const filename = `${Date.now()}-${pdfFile.name}`;
-    const filepath = path.join(uploadDir, filename);
-
-    // Move file to upload directory
-    await pdfFile.mv(filepath);
-
-    // Save document info to database
+    // Create document record in database
     const document = await Document.create({
       title,
-      filename,
-      filepath: `/uploads/documents/${filename}`,
+      filename: pdfFile.filename,
+      filepath: `/uploads/documents/${pdfFile.filename}`, // Keep this the same as it's the URL path
       type: 'pdf',
       uploadedBy: req.user.id
     });

@@ -11,7 +11,6 @@ const userRoutes = require('./routes/userRoutes');
 const statisticRoutes = require('./routes/statisticRoutes');
 const documentationRoutes = require('./routes/documentationRoutes');
 const { updateStatistics } = require('./controllers/statisticController');
-const fileUpload = require('express-fileupload');
 const documentRoutes = require('./routes/documentRoutes');
 
 const startServer = async () => {
@@ -30,13 +29,7 @@ const startServer = async () => {
     }));
     
     app.use(bodyParser.json());
-    app.use('/uploads', express.static('uploads')); // Changed from public/uploads to uploads
-    
-    // Add file upload middleware
-    app.use(fileUpload({
-      limits: { fileSize: 50 * 1024 * 1024 }, // 50MB max file size
-      createParentPath: true
-    }));
+    app.use('/uploads', express.static('public/uploads')); // Changed from public/uploads to uploads
     
     // Logging middleware
     app.use((req, res, next) => {
