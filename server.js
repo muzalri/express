@@ -29,7 +29,10 @@ const startServer = async () => {
     }));
     
     app.use(bodyParser.json());
-    app.use('/uploads', express.static('public/uploads')); // Changed from public/uploads to uploads
+    
+    // Serve static files for both regular uploads and documents
+    app.use('/uploads', express.static('public/uploads'));
+    app.use('/uploads/documents', express.static('public/uploads/documents'));
     
     // Logging middleware
     app.use((req, res, next) => {
