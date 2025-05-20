@@ -5,10 +5,13 @@ const Donation = require('../models/donationModel');
 // Membuat campaign baru (admin only)
 const createCampaign = async (req, res) => {
   try {
-    const { title, detail, category, startDate, endDate, target } = req.body;
+    const { title, detail, category, startDate, endDate, target, latitude, longitude } = req.body;
     
-    // Mengambil path file yang diupload
-    const images = req.files.map(file => `/uploads/${file.filename}`);
+    // Mengambil path file yang diupload jika ada
+    let images = [];
+    if (req.files && req.files.length > 0) {
+      images = req.files.map(file => `/uploads/${file.filename}`);
+    }
 
     if (images.length === 0) {
       return res.status(400).json({ 
@@ -24,6 +27,8 @@ const createCampaign = async (req, res) => {
       startDate: new Date(startDate),
       endDate: new Date(endDate),
       target,
+      latitude: latitude || null,
+      longitude: longitude || null,
       createdBy: req.user.id
     });
 
@@ -34,6 +39,7 @@ const createCampaign = async (req, res) => {
       userRole: req.user.role
     });
   } catch (error) {
+    console.error('Error creating campaign:', error);
     res.status(500).json({ 
       message: error.message,
       userRole: req.user.role
