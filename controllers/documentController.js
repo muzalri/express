@@ -43,7 +43,7 @@ const uploadDocument = async (req, res) => {
 const getAllDocuments = async (req, res) => {
   try {
     const documents = await Document.findAll({
-      attributes: ["id", "title", "filename", "createdAt"],
+      attributes: ["id", "title", "filename", "createdAt", "reportDate"],
       include: [
         {
           model: User,
