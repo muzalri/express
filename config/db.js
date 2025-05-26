@@ -17,12 +17,12 @@ const connectDB = async () => {
     await sequelize.authenticate();
     console.log('Database connected successfully');
     
-    // Sync all models with alter:true
-    await sequelize.sync({ alter: true });
-    console.log('All models were synchronized successfully');
+    // Gunakan sync biasa tanpa alter
+    await sequelize.sync();
+    console.log('Database synchronized');
   } catch (error) {
     console.error('Unable to connect to the database:', error);
-    process.exit(1);
+    throw error;
   }
 };
 
