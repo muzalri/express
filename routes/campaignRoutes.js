@@ -14,7 +14,7 @@ const {
 const upload = require('../middleware/uploadMiddleware');
 
 // Public routes
-router.get('/campaigns', getAllCampaigns);
+router.get('/campaigns', getAllCampaigns);  
 router.get('/campaigns/category/:category', getCampaignsByCategory);
 router.get('/campaigns/statistics', protect, getAllCampaignStatistics);
 router.get('/campaigns/:id', getCampaignById);
