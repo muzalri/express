@@ -25,6 +25,7 @@ app.use(cors({
 app.use(bodyParser.json());
 
 app.use('/uploads', express.static('public/uploads'));
+app.use(express.static('client'));
 
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
